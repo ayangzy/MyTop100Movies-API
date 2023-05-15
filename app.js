@@ -5,9 +5,14 @@ const app = express()
 
 const dbConnect = require('./db/dbConnect')
 
+//error handlers
+const notFoundMiddleware = require('./middleware/notFound')
+
 app.get('/', (req, res) => {
   res.status(200).send({ message: 'Welcome to job movie!!!' })
 })
+
+app.use(notFoundMiddleware)
 
 const PORT = process.env.PORT || 3000
 
