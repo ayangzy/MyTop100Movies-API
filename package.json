@@ -1,0 +1,16 @@
+{
+  "name": "movie",
+  "version": "1.0.0",
+  "description": "An application which lets uses set their top 100 movies",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "author": "Felix Ayange",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "nodemon": "^2.0.22"
+  }
+}
