@@ -1,7 +1,8 @@
 const CustomError = require('../errors')
 const Movie = require('../models/movieModel')
+const User = require('../models/userModel')
 
-async function createMovie(movieData) {
+async function createMovie(movieData, userId, rank) {
   try {
     const movie = await Movie.findOne({ title: movieData.title })
     if (movie) {
@@ -10,6 +11,34 @@ async function createMovie(movieData) {
       )
     }
     const newMovie = await Movie.create(movieData)
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        $push: {
+          movies: {
+            movieId: newMovie._id,
+            rank: rank,
+          },
+        },
+      },
+      { new: true },
+    )
+
+    if (!user) {
+      throw new CustomError.NotFoundError('User not found')
+    }
+
+    const voteCount = await User.aggregate([
+      { $match: { 'movies.movieId': newMovie._id } },
+      { $project: { voteCount: { $size: '$movies' } } },
+    ])
+
+    if (voteCount.length > 0) {
+      newMovie.voteCount = voteCount[0].voteCount
+      await newMovie.save()
+    }
+
     return newMovie
   } catch (error) {
     throw error
@@ -80,10 +109,40 @@ async function deleteMovie(id, user) {
   }
 }
 
+async function getUserTop100Movies(userId) {
+  try {
+    const user = await User.findById(userId)
+
+    if (!user) {
+      throw new CustomError.NotFoundError('User not found')
+    }
+
+    const sortedMovies = user.movies.sort((a, b) => a.rank - b.rank)
+
+    const topMovies = sortedMovies.slice(0, 100)
+
+    const moviePromises = topMovies.map(async (movie) => {
+      const movieId = movie.movieId
+      const movieDetails = await Movie.findById(movieId)
+      return {
+        ranking: movie.rank,
+        movie: movieDetails,
+      }
+    })
+
+    const topMoviesWithDetails = await Promise.all(moviePromises)
+
+    return topMoviesWithDetails
+  } catch (error) {
+    throw error
+  }
+}
+
 module.exports = {
   createMovie,
   getAllMovies,
   getMovie,
   updateMovie,
   deleteMovie,
+  getUserTop100Movies,
 }

@@ -11,14 +11,15 @@ const movieSchema = new mongoose.Schema({
     required: [true, 'The title field is required'],
   },
 
-  overview: {
+  description: {
     type: String,
     trim: true,
-    required: [true, 'The overview field is required'],
+    required: [true, 'The description field is required'],
   },
-  popularity: {
-    type: Number,
-    default: 1,
+
+  genre: {
+    type: String,
+    required: [true, 'The genre field is required'],
   },
 
   releaseDate: {
@@ -33,7 +34,7 @@ const movieSchema = new mongoose.Schema({
 
   voteCount: {
     type: Number,
-    required: [true, 'The vote count field is required'],
+    default: 0,
   },
 
   createdBy: {

@@ -5,8 +5,14 @@ const {
 } = require('../responses/apiResponses')
 
 exports.createMovie = async (req, res) => {
-  req.body.createdBy = req.user.userId
-  const newMovie = await movieService.createMovie(req.body)
+  const { userId } = req.user
+  req.body.createdBy = userId
+
+  const newMovie = await movieService.createMovie(
+    req.body,
+    userId,
+    req.body.rank,
+  )
   createdResponse(res, 'Movie created successfully', newMovie)
 }
 
@@ -36,4 +42,10 @@ exports.deleteMovie = async (req, res) => {
   const user = req.user.userId
   await movieService.deleteMovie(req.params.id, user)
   successResponse(res, 'Movie deleted successfully')
+}
+
+exports.getTopMovies = async (req, res) => {
+  const user = req.user.userId
+  const topMovies = await movieService.getUserTop100Movies(user)
+  successResponse(res, 'Top movies retreived successfully', topMovies)
 }
