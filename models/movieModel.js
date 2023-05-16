@@ -35,6 +35,12 @@ const movieSchema = new mongoose.Schema({
     type: Number,
     required: [true, 'The vote count field is required'],
   },
+
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'The user field is required'],
+  },
 })
 
 const Movie = mongoose.model('Movie', movieSchema)

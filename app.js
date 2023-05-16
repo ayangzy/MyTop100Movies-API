@@ -7,6 +7,7 @@ const bodyParser = require('body-parser')
 
 //routers
 const authRoutes = require('./routes/authRoute')
+const movieRoutes = require('./routes/movieRoute')
 //error handlers
 const notFoundMiddleware = require('./middleware/notFound')
 const errorHandlerMiddleware = require('./middleware/errorHandler')
@@ -20,6 +21,7 @@ app.get('/', (req, res) => {
 
 //endpoints
 app.use('/api/v1/auth', authRoutes)
+app.use('/api/v1/movies', movieRoutes)
 
 app.use(notFoundMiddleware)
 app.use(errorHandlerMiddleware)
