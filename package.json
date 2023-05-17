@@ -4,8 +4,9 @@
   "description": "An application which lets uses set their top 100 movies",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "nodemon app.js"
+    
   },
   "author": "Felix Ayange",
   "license": "ISC",
@@ -22,5 +23,8 @@
     "mongoose": "^7.1.1",
     "node-fetch": "^2.6.7",
     "nodemon": "^2.0.22"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
   }
 }

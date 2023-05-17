@@ -141,7 +141,7 @@ async function rankMovie(userId, movieId, rank) {
     const user = await User.findById(userId)
 
     if (!user) {
-      throw new CustomError.BadRequestError('User not authenticated')
+      throw new CustomError.NotFoundError('User not found')
     }
 
     const existingRank = user.movies.find((m) => m.rank === rank)
