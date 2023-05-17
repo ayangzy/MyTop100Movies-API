@@ -8,11 +8,7 @@ exports.createMovie = async (req, res) => {
   const { userId } = req.user
   req.body.createdBy = userId
 
-  const newMovie = await movieService.createMovie(
-    req.body,
-    userId,
-    req.body.rank,
-  )
+  const newMovie = await movieService.createMovie(req.body, userId)
   createdResponse(res, 'Movie created successfully', newMovie)
 }
 
@@ -44,8 +40,24 @@ exports.deleteMovie = async (req, res) => {
   successResponse(res, 'Movie deleted successfully')
 }
 
-exports.getTopMovies = async (req, res) => {
+exports.getTop100Movies = async (req, res) => {
   const user = req.user.userId
   const topMovies = await movieService.getUserTop100Movies(user)
   successResponse(res, 'Top movies retreived successfully', topMovies)
+}
+
+exports.rankMovie = async (req, res) => {
+  const user = req.user.userId
+  const { movieId } = req.params
+  const { rank } = req.body
+
+  await movieService.rankMovie(user, movieId, rank)
+
+  successResponse(res, 'Movie ranked successfully')
+}
+
+exports.getExternalApiMovies = async (req, res) => {
+  const { page } = req.query
+  const data = await movieService.getMovieList(page)
+  successResponse(res, 'Popular movies retreived successfully', data)
 }

@@ -1,13 +1,19 @@
 const CustomError = require('../errors')
 const Movie = require('../models/movieModel')
 const User = require('../models/userModel')
+const fetch = require('node-fetch')
+const apiKey = process.env.API_KEY
+const baseUrl = process.env.BASE_URL
 
-async function createMovie(movieData, userId, rank) {
+async function createMovie(movieData, userId) {
   try {
-    const movie = await Movie.findOne({ title: movieData.title })
+    const movie = await Movie.findOne({
+      title: movieData.title,
+      createdBy: userId,
+    })
     if (movie) {
       throw new CustomError.BadRequestError(
-        `The movie ${movie.title} is already added`,
+        `You already added the movie titled ${movie.title}`,
       )
     }
     const newMovie = await Movie.create(movieData)
@@ -18,26 +24,12 @@ async function createMovie(movieData, userId, rank) {
         $push: {
           movies: {
             movieId: newMovie._id,
-            rank: rank,
+            rank: 0,
           },
         },
       },
       { new: true },
     )
-
-    if (!user) {
-      throw new CustomError.NotFoundError('User not found')
-    }
-
-    const voteCount = await User.aggregate([
-      { $match: { 'movies.movieId': newMovie._id } },
-      { $project: { voteCount: { $size: '$movies' } } },
-    ])
-
-    if (voteCount.length > 0) {
-      newMovie.voteCount = voteCount[0].voteCount
-      await newMovie.save()
-    }
 
     return newMovie
   } catch (error) {
@@ -117,7 +109,13 @@ async function getUserTop100Movies(userId) {
       throw new CustomError.NotFoundError('User not found')
     }
 
-    const sortedMovies = user.movies.sort((a, b) => a.rank - b.rank)
+    const rankedMovies = user.movies.filter((movie) => movie.rank >= 1)
+
+    if (rankedMovies.length === 0) {
+      return []
+    }
+
+    const sortedMovies = rankedMovies.sort((a, b) => a.rank - b.rank)
 
     const topMovies = sortedMovies.slice(0, 100)
 
@@ -138,6 +136,62 @@ async function getUserTop100Movies(userId) {
   }
 }
 
+async function rankMovie(userId, movieId, rank) {
+  try {
+    const user = await User.findById(userId)
+
+    if (!user) {
+      throw new CustomError.BadRequestError('User not authenticated')
+    }
+
+    const existingRank = user.movies.find((m) => m.rank === rank)
+
+    if (existingRank) {
+      throw new CustomError.BadRequestError(
+        'The rank is already assigned to a movie',
+      )
+    }
+
+    const movieIndex = user.movies.findIndex(
+      (m) => m.movieId.toString() === movieId,
+    )
+
+    if (movieIndex === -1) {
+      throw new CustomError.BadRequestError("Movie not found in user's list")
+    }
+
+    user.movies[movieIndex].rank = rank
+
+    await user.save()
+
+    return
+  } catch (error) {
+    throw error
+  }
+}
+
+const options = {
+  method: 'GET',
+  headers: {
+    Accept: 'application/json',
+    Authorization: `Bearer ${apiKey}`,
+  },
+}
+
+async function getMovieList(pageNumber) {
+  try {
+    const response = await fetch(
+      `${baseUrl}/movie/popular?language=en-US&page=${pageNumber}`,
+      options,
+    )
+    const result = await response.json()
+
+    return result
+  } catch (error) {
+    throw error
+  }
+}
+
 module.exports = {
   createMovie,
   getAllMovies,
@@ -145,4 +199,6 @@ module.exports = {
   updateMovie,
   deleteMovie,
   getUserTop100Movies,
+  rankMovie,
+  getMovieList,
 }
