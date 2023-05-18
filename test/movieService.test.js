@@ -361,6 +361,14 @@ describe('deleteMovie', () => {
     const movie = { _id: movieId, createdBy: user, title: 'Test Movie' }
     Movie.findOne.mockResolvedValue(movie)
 
+    // Mocking the User.findOne function
+    const userObj = {
+      _id: user,
+      movies: [{ movieId: movieId }],
+      save: jest.fn(),
+    }
+    User.findOne.mockResolvedValue(userObj)
+
     // Mocking the Movie.findOneAndDelete function
     Movie.findOneAndDelete.mockResolvedValue()
 
@@ -371,6 +379,8 @@ describe('deleteMovie', () => {
     expect(Movie.findOneAndDelete).toHaveBeenCalledWith({ _id: movieId })
     expect(CustomError.NotFoundError).not.toHaveBeenCalled()
     expect(CustomError.UnauthorizedError).not.toHaveBeenCalled()
+    expect(userObj.movies.length).toBe(0)
+    expect(userObj.save).toHaveBeenCalledTimes(1)
   })
 
   it('should throw NotFoundError if the movie does not exist', async () => {
@@ -560,6 +570,13 @@ describe('rankMovie', () => {
     }
     User.findById.mockResolvedValue(user)
 
+    // Mock the Movie model
+    const movie = {
+      _id: 'movie2',
+      title: 'Movie 2',
+    }
+    Movie.findById.mockResolvedValue(movie)
+
     const userId = 'user1'
     const movieId = 'movie2'
     const rank = 5
@@ -589,6 +606,37 @@ describe('rankMovie', () => {
     })
   })
 
+  it('should throw NotFoundError if the movie is not found', async () => {
+    // Mock the User model
+    const user = {
+      _id: 'user1',
+      movies: [
+        { movieId: 'movie1', rank: 1 },
+        { movieId: 'movie2', rank: 2 },
+        { movieId: 'movie3', rank: 3 },
+      ],
+    }
+    User.findById.mockResolvedValue(user)
+
+    const userId = 'user1'
+    const movieId = 'non-existing-movie-id'
+    const rank = 5
+
+    // Mocking the Movie.findById function
+    Movie.findById.mockResolvedValue(null)
+
+    // Mocking the CustomError.NotFoundError function
+    const expectedErrorMessage = 'Movie not found'
+    CustomError.NotFoundError.mockImplementation((message) => ({
+      message,
+    }))
+
+    // Assertions
+    await expect(rankMovie(userId, movieId, rank)).rejects.toEqual({
+      message: expectedErrorMessage,
+    })
+  })
+
   it('should throw BadRequestError if the rank is already assigned to another movie', async () => {
     const user = {
       _id: 'user1',
@@ -599,6 +647,13 @@ describe('rankMovie', () => {
       ],
     }
     User.findById.mockResolvedValue(user)
+
+    // Mock the Movie model
+    const movie = {
+      _id: 'movie2',
+      title: 'Movie 2',
+    }
+    Movie.findById.mockResolvedValue(movie)
 
     const userId = 'user1'
     const movieId = 'movie4' // Assume another movie has already been assigned rank 2

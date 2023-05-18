@@ -95,6 +95,20 @@ async function deleteMovie(id, user) {
         'You are not authorized to delete this movie',
       )
     }
+
+    // Delete the movie from the user's list of movies
+    const userObj = await User.findOne({ _id: user })
+    if (!userObj) {
+      throw new CustomError.NotFoundError('User not found')
+    }
+    const movieIndex = userObj.movies.findIndex(
+      (m) => m.movieId.toString() === id,
+    )
+    if (movieIndex !== -1) {
+      userObj.movies.splice(movieIndex, 1)
+      await userObj.save()
+    }
+
     await Movie.findOneAndDelete({ _id: id })
   } catch (error) {
     throw error
@@ -142,6 +156,12 @@ async function rankMovie(userId, movieId, rank) {
 
     if (!user) {
       throw new CustomError.NotFoundError('User not found')
+    }
+
+    const movie = await Movie.findById(movieId)
+
+    if (!movie) {
+      throw new CustomError.NotFoundError('Movie not found')
     }
 
     const existingRank = user.movies.find((m) => m.rank === rank)
