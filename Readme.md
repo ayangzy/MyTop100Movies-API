@@ -31,7 +31,7 @@ step 4
 copy the provided example configuration file located in the .env.example and update it in you .env file. Ensure you add the ```JWT_SERCRET``` value else you won't be able to authenticate.
 
 step 4
-Start the application. Run the project using the provided command or script: ```npm start```
+Start the application. Run the project using the provided command or script: ```npm run dev```
 
 Finally once the application is running, you can access it by opening a web browser and entering the appropriate URL (e.g., http://localhost:3000).
 
