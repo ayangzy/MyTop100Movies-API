@@ -2,9 +2,7 @@ const mongoose = require('mongoose')
 const { DB_HOST, DB_PORT, DB_DATABASE } = require('../config/config')
 mongoose.set('strictQuery', false)
 
-const url = `mongodb://${DB_HOST}:${DB_PORT}/${DB_DATABASE}`
-
-const connectDB = () => {
+const connectDB = (url) => {
   return mongoose
     .connect(url, {
       useNewUrlParser: true,

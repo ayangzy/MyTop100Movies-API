@@ -30,7 +30,7 @@ const PORT = process.env.PORT || 3000
 
 const start = async () => {
   try {
-    await dbConnect()
+    await dbConnect(process.env.MONGO_URL)
 
     if (process.env.NODE_ENV !== 'production') {
       app.listen(PORT, () => {
