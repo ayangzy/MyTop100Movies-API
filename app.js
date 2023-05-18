@@ -32,11 +32,9 @@ const start = async () => {
   try {
     await dbConnect(process.env.MONGO_URL)
 
-    if (process.env.NODE_ENV !== 'production') {
-      app.listen(PORT, () => {
-        console.log(`Server is listening on port ${PORT} ...`)
-      })
-    }
+    app.listen(PORT, () => {
+      console.log(`Server is listening on port ${PORT} ...`)
+    })
   } catch (error) {
     console.log(error)
   }
